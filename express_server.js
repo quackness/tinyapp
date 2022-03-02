@@ -7,6 +7,19 @@ app.set('view engine', 'ejs');
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 
+// random string generator
+function generateRandomString() {
+  let result = '';
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const length = 6;
+  for (let i = 0; i < length; i++) {
+    const randomNum = Math.floor(Math.random() * characters.length);
+    result += characters[randomNum];
+  }
+  return result;
+};
+console.log(generateRandomString());
+
 
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
