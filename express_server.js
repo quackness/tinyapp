@@ -4,6 +4,10 @@ const PORT = 8080;
 
 app.set('view engine', 'ejs');
 
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({extended: true}));
+
+
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
   '9sm5xK': 'http://www.google.com'
@@ -40,6 +44,13 @@ app.get('/urls/:shortURL', (req, res) => {
 app.get('/hello', (req, res) => {
   res.send('<html><body>Hello <b>World</b></body></html>\n');
 });
+
+// post routes
+
+app.post('/urls', (req, res) => {
+  console.log(req.body); //log the post req. to the body
+  res.send('OK'); //respond with Ok
+})
 
 // listen
 app.listen(PORT, () => {
