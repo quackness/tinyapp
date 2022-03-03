@@ -1,10 +1,10 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const app = express();
 const PORT = 8080;
 
 app.set('view engine', 'ejs');
 
-const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 
 // random string generator
@@ -55,13 +55,21 @@ app.get('/urls/:shortURL', (req, res) => {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL]
   };
-  res.render("urls_show", templateVars);
+  res.render('urls_show', templateVars);
 });
 
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
   res.redirect(longURL);
+});
+
+app.get('/urls/:shortURL/edit', (req, res) => {
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL]
+  };
+  res.render('urls_show', templateVars);
 });
 
 
@@ -71,6 +79,13 @@ app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
   res.redirect(`/urls/${shortURL}`);
+});
+
+app.post('/urls/:shortURL', (req, res) => {
+  const { longURL } = req.body;
+  const { shortURL } = req.params;
+  urlDatabase[shortURL] = longURL;
+  res.redirect('/urls');
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
