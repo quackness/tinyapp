@@ -2,11 +2,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const PORT = 8080;
-
+const cookieParser = require('cookie-parser');
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({extended: true}));
-
+app.use(cookieParser());
 // random string generator
 function generateRandomString() {
   let result = '';
@@ -41,19 +41,24 @@ app.get('/hello', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { 
+    urls: urlDatabase, 
+    username: req.cookies["username"]
+  };
+  //console.log(req.cookies)
   res.render('urls_index', templateVars);
 });
 
 //keep this above /:id
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
+  res.render('urls_new', {username: req.cookies['username']});
 });
 
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL]
+    longURL: urlDatabase[req.params.shortURL],
+    username: req.cookiess["username"]
   };
   res.render('urls_show', templateVars);
 });
@@ -67,13 +72,28 @@ app.get('/u/:shortURL', (req, res) => {
 app.get('/urls/:shortURL/edit', (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL]
+    longURL: urlDatabase[req.params.shortURL],
+    username: req.cookiess['username']
   };
   res.render('urls_show', templateVars);
 });
 
 
 // post routes
+
+app.post('/login', (req, res) => {
+  const { username } = req.body;//req.body is what you insert to the form, it is a value at the key
+  console.log(req.body);
+  res.cookie('username', username);
+  res.redirect('/urls');
+});
+
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
+});
+
+
 app.post('/urls', (req, res) => {
   const { longURL } = req.body;
   const shortURL = generateRandomString();
@@ -81,12 +101,16 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+
+
 app.post('/urls/:shortURL', (req, res) => {
   const { longURL } = req.body;
   const { shortURL } = req.params;
   urlDatabase[shortURL] = longURL;
   res.redirect('/urls');
 });
+
+
 
 app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
