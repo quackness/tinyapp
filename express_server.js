@@ -1,16 +1,20 @@
 const express = require('express');
+
 const bodyParser = require('body-parser');
+
+const cookieParser = require('cookie-parser');
+
 const app = express();
 const PORT = 8080;
-const cookieParser = require('cookie-parser');
 app.set('view engine', 'ejs');
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 // random string generator
 function generateRandomString() {
   let result = '';
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const length = 6;
   for (let i = 0; i < length; i++) {
     const randomNum = Math.floor(Math.random() * characters.length);
@@ -18,8 +22,6 @@ function generateRandomString() {
   }
   return result;
 };
-generateRandomString();
-
 
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
@@ -41,24 +43,23 @@ app.get('/hello', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const templateVars = { 
-    urls: urlDatabase, 
-    username: req.cookies["username"]
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies['username']
   };
-  //console.log(req.cookies)
   res.render('urls_index', templateVars);
 });
 
 //keep this above /:id
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new', {username: req.cookies['username']});
+  res.render('urls_new', {username: req.cookies['username']} );
 });
 
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookiess["username"]
+    username: req.cookies['username']
   };
   res.render('urls_show', templateVars);
 });
@@ -82,7 +83,7 @@ app.get('/urls/:shortURL/edit', (req, res) => {
 // post routes
 
 app.post('/login', (req, res) => {
-  const { username } = req.body;//req.body is what you insert to the form, it is a value at the key
+  const { username } = req.body;// req.body is what you insert to the form, it is a value at the key
   console.log(req.body);
   res.cookie('username', username);
   res.redirect('/urls');
@@ -93,15 +94,12 @@ app.post('/logout', (req, res) => {
   res.redirect('/urls');
 });
 
-
 app.post('/urls', (req, res) => {
   const { longURL } = req.body;
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
   res.redirect(`/urls/${shortURL}`);
 });
-
-
 
 app.post('/urls/:shortURL', (req, res) => {
   const { longURL } = req.body;
@@ -110,14 +108,11 @@ app.post('/urls/:shortURL', (req, res) => {
   res.redirect('/urls');
 });
 
-
-
 app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
   res.redirect('/urls');
 });
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
