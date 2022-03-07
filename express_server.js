@@ -21,7 +21,7 @@ function generateRandomString() {
     result += characters[randomNum];
   }
   return result;
-};
+}
 
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
@@ -29,18 +29,26 @@ const urlDatabase = {
 };
 
 const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+  'userRandomID': {
+    id: 'userRandomID',
+    email: 'user@example.com',
+    password: 'purple-monkey-dinosaur'
   },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
-    password: "dishwasher-funk"
+  'user2RandomID': {
+    id: 'user2RandomID',
+    email: 'user2@example.com', 
+    password: 'dishwasher-funk'
   }
 }
 
+function findUserByEmail(email) {
+  for (let id in users) {
+    if (users[id].email === email) {
+      return users[id];
+    }
+  }
+  return null;
+}
 
 // get routes
 
@@ -67,13 +75,13 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-//keep this above /:id
+// keep this above /:id
 app.get('/urls/new', (req, res) => {
   const userID = req.cookies['user_id'];
   const templateVars = {
     username: req.cookies['username'],
     user: users[userID]
-  }
+  };
   res.render('urls_new', templateVars);
 });
 
@@ -105,7 +113,7 @@ app.get('/urls/:shortURL/edit', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
-app.get('/register', (req, res) => {//registration
+app.get('/register', (req, res) => { // registration
   const templateVars = {
   };
   res.render('register', templateVars);
@@ -115,8 +123,8 @@ app.get('/register', (req, res) => {//registration
 
 app.post('/login', (req, res) => {
   const { username } = req.body;// req.body is what you insert to the form, it is a value at the key
-  //console.log(req.body);
-  res.cookie('username', username);//setting username cookie to username that was passed in
+  // console.log(req.body);
+  res.cookie('username', username);// setting username cookie to username that was passed in
   res.redirect('/urls');
 });
 
@@ -148,14 +156,20 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  if (email === '' || password === '') {
+    return res.status(400).send('Email or password cannot be empty');
+  }
+  if (findUserByEmail(email)) {
+    return res.status(400).send('Email already exists in the database');
+  }
   const userID = generateRandomString();
   const user = {
     id: userID,
-    email: email,
-    password: password
+    email,
+    password
   }
   users[userID] = user;
-  console.log(users);
+  console.log(users[userID]);
   res.cookie('user_id', userID);
   res.redirect('/urls');
 });
