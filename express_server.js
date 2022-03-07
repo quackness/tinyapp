@@ -42,6 +42,9 @@ app.get('/hello', (req, res) => {
   res.send('<html><body>Hello <b>World</b></body></html>\n');
 });
 
+
+
+
 app.get('/urls', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -79,13 +82,18 @@ app.get('/urls/:shortURL/edit', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
+app.get('/register', (req, res) => {//registration
+  const templateVars = {
+  };
+  res.render('register', templateVars);
+});
 
 // post routes
 
 app.post('/login', (req, res) => {
   const { username } = req.body;// req.body is what you insert to the form, it is a value at the key
-  console.log(req.body);
-  res.cookie('username', username);
+  //console.log(req.body);
+  res.cookie('username', username);//setting username cookie to username that was passed in
   res.redirect('/urls');
 });
 
