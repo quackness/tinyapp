@@ -28,6 +28,20 @@ const urlDatabase = {
   '9sm5xK': 'http://www.google.com'
 };
 
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
+
 // get routes
 
 app.get('/', (req, res) => {
@@ -43,11 +57,11 @@ app.get('/hello', (req, res) => {
 });
 
 
-
-
 app.get('/urls', (req, res) => {
+  const userID = req.cookies['user_id'];
   const templateVars = {
     urls: urlDatabase,
+    user: users[userID],
     username: req.cookies['username']
   };
   res.render('urls_index', templateVars);
@@ -55,13 +69,20 @@ app.get('/urls', (req, res) => {
 
 //keep this above /:id
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new', {username: req.cookies['username']} );
+  const userID = req.cookies['user_id'];
+  const templateVars = {
+    username: req.cookies['username'],
+    user: users[userID]
+  }
+  res.render('urls_new', templateVars);
 });
 
 app.get('/urls/:shortURL', (req, res) => {
+  const userID = req.cookies['user_id'];
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
+    user: users[userID],
     username: req.cookies['username']
   };
   res.render('urls_show', templateVars);
@@ -74,10 +95,12 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.get('/urls/:shortURL/edit', (req, res) => {
+  const userID = req.cookies['user_id'];
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookiess['username']
+    user: users[userID],
+    username: req.cookies['username']
   };
   res.render('urls_show', templateVars);
 });
@@ -98,7 +121,7 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
@@ -119,6 +142,21 @@ app.post('/urls/:shortURL', (req, res) => {
 app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
+  res.redirect('/urls');
+});
+
+app.post('/register', (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const userID = generateRandomString();
+  const user = {
+    id: userID,
+    email: email,
+    password: password
+  }
+  users[userID] = user;
+  console.log(users);
+  res.cookie('user_id', userID);
   res.redirect('/urls');
 });
 

@@ -11,7 +11,7 @@
   </head>
 
   <body>
-    <%- include('./partials/_header', {username:null}) %>
+    <%- include('./partials/_header', {username:null, user:null}) %>
     <div>
       <form method="post" action="/register">
         <div class="form-group">
@@ -22,7 +22,6 @@
           <label for="exampleInputPassword1">Password</label>
           <input type="password" name= "password" class="form-control" id="exampleInputPassword1" placeholder="Password">
         </div>
-        
         <button type="submit" class="btn btn-primary">Register</button>
       </form>
     </div>
