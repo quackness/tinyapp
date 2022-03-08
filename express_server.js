@@ -11,7 +11,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// random string generator
+// helper functions and objects
 function generateRandomString() {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -110,9 +110,7 @@ app.get('/urls/:shortURL/edit', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  const templateVars = {
-  };
-  res.render('register', templateVars);
+  res.render('register');
 });
 
 app.get('/login', (req, res) => {
@@ -123,11 +121,12 @@ app.get('/login', (req, res) => {
 // post routes
 
 app.post('/login', (req, res) => {
-  const email = req.body.email;//req. hey server do this or give me this, res answer from the server
+  const email = req.body.email;//req. hey server do this or give me this; res is answer from the server
   const password = req.body.password;
   const foundUser = findUserByEmail(email);//object
   if (foundUser === null || password !== foundUser.password) {
-    return res.status(403);//staus code
+    return res.status(403).send('Invalid credentials');
+    
   } else {
     res.cookie('user_id', foundUser.id);
     return res.redirect('/urls');
