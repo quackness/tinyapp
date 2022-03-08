@@ -11,10 +11,19 @@
       </div>
     </div>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <% if (user === null) { %>
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/login">Login</a>
         <a class="nav-item nav-link" href="/register">Register</a>
       </div>
+      <% } else { %>
+        <form class="form-inline justify-content-right" action="/logout" method="POST">
+          <div class="form-group mb-2">
+            <div>Logged In As: <%= user.email %></div>
+            <button type="submit" class="btn btn-primary">Log out</button>
+          </div>
+        </form>
+      <% } %>
     </div>
   </nav>
 </header>

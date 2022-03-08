@@ -69,8 +69,7 @@ app.get('/urls', (req, res) => {
   const userID = req.cookies['user_id'];
   const templateVars = {
     urls: urlDatabase,
-    user: users[userID],
-    username: req.cookies['username']
+    user: userID ? users[userID] : null
   };
   res.render('urls_index', templateVars);
 });
@@ -79,8 +78,7 @@ app.get('/urls', (req, res) => {
 app.get('/urls/new', (req, res) => {
   const userID = req.cookies['user_id'];
   const templateVars = {
-    username: req.cookies['username'],
-    user: users[userID]
+    user: userID ? users[userID] : null
   };
   res.render('urls_new', templateVars);
 });
@@ -90,8 +88,7 @@ app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    user: users[userID],
-    username: req.cookies['username']
+    user: userID ? users[userID] : null
   };
   res.render('urls_show', templateVars);
 });
@@ -107,19 +104,18 @@ app.get('/urls/:shortURL/edit', (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    user: users[userID],
-    username: req.cookies['username']
+    user: userID ? users[userID] : null
   };
   res.render('urls_show', templateVars);
 });
 
-app.get('/register', (req, res) => { // registration
+app.get('/register', (req, res) => {
   const templateVars = {
   };
   res.render('register', templateVars);
 });
 
-app.get('/login', (req, res) => { // login
+app.get('/login', (req, res) => {
   res.render('login')
 });
 
@@ -127,10 +123,15 @@ app.get('/login', (req, res) => { // login
 // post routes
 
 app.post('/login', (req, res) => {
-  const { username } = req.body;// req.body is what you insert to the form, it is a value at the key
-  // console.log(req.body);
-  res.cookie('username', username);// setting username cookie to username that was passed in
-  res.redirect('/urls');
+  const email = req.body.email;//req. hey server do this or give me this, res answer from the server
+  const password = req.body.password;
+  const foundUser = findUserByEmail(email);//object
+  if (foundUser === null || password !== foundUser.password) {
+    return res.status(403);//staus code
+  } else {
+    res.cookie('user_id', foundUser.id);
+    return res.redirect('/urls');
+  };
 });
 
 app.post('/logout', (req, res) => {
