@@ -119,6 +119,11 @@ app.get('/register', (req, res) => { // registration
   res.render('register', templateVars);
 });
 
+app.get('/login', (req, res) => { // login
+  res.render('login')
+});
+
+
 // post routes
 
 app.post('/login', (req, res) => {
