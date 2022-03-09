@@ -1,11 +1,11 @@
 const express = require('express');
-
 const bodyParser = require('body-parser');
-
 const cookieParser = require('cookie-parser');
 
 const app = express();
+
 const PORT = 8080;
+
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -24,9 +24,16 @@ function generateRandomString() {
 }
 
 const urlDatabase = {
-  b2xVn2: 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
+  b6UTxQ: {
+        longURL: "https://www.tsn.ca",
+        userID: "aJ48lW"
+  },
+  i3BoGr: {
+      longURL: "https://www.google.ca",
+      userID: "aJ48lW"
+  }
 };
+
 
 const users = {
   userRandomID: {
@@ -76,33 +83,44 @@ app.get('/urls', (req, res) => {
 // keep this above /:id
 app.get('/urls/new', (req, res) => {
   const userID = req.cookies.user_id;
+    if (!userID) {
+      res.redirect('/login');
+    } else {
   const templateVars = {
-    user: userID ? users[userID] : null,
-  };
+    user: userID ? users[userID] : null}
   res.render('urls_new', templateVars);
+  };
 });
+
 
 app.get('/urls/:shortURL', (req, res) => {
   const userID = req.cookies.user_id;
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
+    longURL: urlDatabase[req.params.shortURL].longURL,
     user: userID ? users[userID] : null,
   };
   res.render('urls_show', templateVars);
 });
 
 app.get('/u/:shortURL', (req, res) => {
-  const { shortURL } = req.params;
-  const longURL = urlDatabase[shortURL];
+  const shortURL = req.params.shortURL
+  if (!urlDatabase[shortURL]) {
+    return res.render('error', {errorMessage: 'Short URL does not exist, it has been changed. Use updated version of short URL.'})
+  }
+  const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
 
 app.get('/urls/:shortURL/edit', (req, res) => {
   const userID = req.cookies.user_id;
+  const shortURL = req.params.shortURL
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send('Short URL does not exist, it has been changed. Use updated version of short URL.');
+  }
   const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
+    shortURL,
+    longURL: urlDatabase[shortURL].longURL,
     user: userID ? users[userID] : null,
   };
   res.render('urls_show', templateVars);
@@ -113,6 +131,10 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
+  const userID = req.cookies.user_id;
+  if (userID) {
+    res.redirect('/urls');
+  }
   res.render('login');
 });
 
@@ -135,21 +157,34 @@ app.post('/logout', (req, res) => {
 });
 
 app.post('/urls', (req, res) => {
+  const userID = req.cookies.user_id;
+  if (!userID) {
+    return res.status(403).send('Please login to shorten the link');
+  };
   const { longURL } = req.body;
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL] = {
+    longURL,
+    userID
+  } 
   res.redirect(`/urls/${shortURL}`);
 });
 
 app.post('/urls/:shortURL', (req, res) => {
   const { longURL } = req.body;
   const { shortURL } = req.params;
-  urlDatabase[shortURL] = longURL;
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send('Short URL does not exist');
+  }
+  urlDatabase[shortURL]['longURL'] = longURL;
   res.redirect('/urls');
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
-  const { shortURL } = req.params;
+  const shortURL = req.params.shortURL
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send('Short URL does not exist, it has been changed. Use updated version of short URL.');
+  }
   delete urlDatabase[shortURL];
   res.redirect('/urls');
 });
