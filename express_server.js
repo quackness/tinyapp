@@ -23,6 +23,17 @@ function generateRandomString() {
   return result;
 }
 
+const urlsForUser = (id) => {
+  let newObj = {};
+  for ( short in urlDatabase) {
+    const userID = urlDatabase[short].userID;
+    if (id === userID) {
+      newObj[short] = urlDatabase[short];    
+    } 
+  }
+  return newObj;
+};
+
 const urlDatabase = {
   b6UTxQ: {
         longURL: "https://www.tsn.ca",
@@ -73,12 +84,18 @@ app.get('/hello', (req, res) => {
 
 app.get('/urls', (req, res) => {
   const userID = req.cookies.user_id;
-  const templateVars = {
-    urls: urlDatabase,
-    user: userID ? users[userID] : null,
-  };
-  res.render('urls_index', templateVars);
-});
+  if (!userID) {
+    return res.render('error', {errorMessage: 'Please login or register to see your own shortened URLs'})
+  }
+  const urls = urlsForUser(userID)
+  console.log('urls:', urls);
+    const templateVars = {
+      urls,
+      user: userID ? users[userID] : null,
+    }
+    res.render('urls_index', templateVars);
+  });
+
 
 // keep this above /:id
 app.get('/urls/new', (req, res) => {
@@ -94,7 +111,15 @@ app.get('/urls/new', (req, res) => {
 
 
 app.get('/urls/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;
   const userID = req.cookies.user_id;
+  if (!req.cookies.user_id) {
+    return res.render('error', {errorMessage: 'Please login or register to see your own shortened URLs'})
+  };
+  const userURLs = urlsForUser(userID);
+  if (!Object.keys(userURLs).includes(shortURL)) { //shortURL is a dynamic var.
+    return res.render('error', {errorMessage: 'This short URL does not belong to you'})
+  };
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
@@ -102,6 +127,7 @@ app.get('/urls/:shortURL', (req, res) => {
   };
   res.render('urls_show', templateVars);
 });
+
 
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL
@@ -118,6 +144,10 @@ app.get('/urls/:shortURL/edit', (req, res) => {
   if (!urlDatabase[shortURL]) {
     return res.status(404).send('Short URL does not exist, it has been changed. Use updated version of short URL.');
   }
+  const userURLs = urlsForUser(userID);//we get all urls for that user
+  if (!Object.keys(userURLs).includes(shortURL)) { //shortURL is a dynamic var./we are checking if the short url exists in db
+    return res.render('error', {errorMessage: 'This short URL does not belong to you, you cannot edit it'})
+  };
   const templateVars = {
     shortURL,
     longURL: urlDatabase[shortURL].longURL,
@@ -176,15 +206,25 @@ app.post('/urls/:shortURL', (req, res) => {
   if (!urlDatabase[shortURL]) {
     return res.status(404).send('Short URL does not exist');
   }
+  const userID = req.cookies.user_id;
+  const userURLs = urlsForUser(userID);//we get all urls for that user
+  if (!Object.keys(userURLs).includes(shortURL)) { //shortURL is a dynamic var./we are checking if the short url exists in db
+    return res.render('error', {errorMessage: 'This short URL does not belong to you, you cannot edit it'})
+  };
   urlDatabase[shortURL]['longURL'] = longURL;
   res.redirect('/urls');
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
-  const shortURL = req.params.shortURL
+  const shortURL = req.params.shortURL;
+  const userID = req.cookies.user_id;
   if (!urlDatabase[shortURL]) {
     return res.status(404).send('Short URL does not exist, it has been changed. Use updated version of short URL.');
   }
+  const userURLs = urlsForUser(userID);//with function we get all urls for that user
+  if (!Object.keys(userURLs).includes(shortURL)) { //shortURL is a dynamic var./we are checking if the short url exists in db
+    return res.render('error', {errorMessage: 'This short URL does not belong to you, you cannot delete it'})
+  };
   delete urlDatabase[shortURL];
   res.redirect('/urls');
 });
