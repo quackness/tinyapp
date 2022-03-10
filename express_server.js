@@ -48,17 +48,17 @@ const urlDatabase = {
   }
 };
 
-
+//edited object to strore hashed passwords 
 const users = {
-  userRandomID: {
-    id: 'userRandomID',
-    email: 'user@example.com',
-    password: 'purple-monkey-dinosaur'//bcrypt.hashSync('purple-monkey-dinosaur', salt)???
+  ivR5b2: {
+    id: 'ivR5b2',
+    email: 'dubajkaro@gmail.com',
+    password: '$2a$10$475dKCDSjFtKRFbNwm9QWeOLoPpw0i9aGOSbZ3BiZKxA2Sn.qBiKu'
   },
-  user2RandomID: {
-    id: 'user2RandomID',
-    email: 'user2@example.com',
-    password: 'dishwasher-funk'
+  Qviy2H: {
+    id: 'Qviy2H',
+    email: 'dubajkaro+1@gmail.com',
+    password: '$2a$10$JzHpgp2.3amJohtM9Fv8Ae4k9rwv74GYTxQFV9w2YGrAnabGl3gJS'
   },
 };
 
@@ -177,7 +177,7 @@ app.post('/login', (req, res) => {
   const { email } = req.body;
   const { password } = req.body;
   const foundUser = findUserByEmail(email);
-  const isPasswordMatching = bcrypt.compareSync(password, foundUser.password);
+  const isPasswordMatching = bcrypt.compareSync(password, foundUser.password);//comapring the password with a stored one
 
   if (foundUser === null || !isPasswordMatching) {
     return res.status(403).send('Invalid login credentials');
@@ -244,7 +244,7 @@ app.post('/register', (req, res) => {
     return res.status(400).send('Email already exists in the database');
   }
   const userID = generateRandomString();
-  const hashedPassword = bcrypt.hashSync(password, 10);
+  const hashedPassword = bcrypt.hashSync(password, 10);//function for hashing password
   const user = {
     id: userID,
     email,
