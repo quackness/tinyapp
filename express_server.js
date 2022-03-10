@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
+//const cookieParser = require('cookie-parser'); this will be deleted
+const cookieSession = require('cookie-session');//new
 const bcrypt = require('bcryptjs');//
 
 const app = express();
@@ -10,7 +11,14 @@ const PORT = 8080;
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
+//app.use(cookieParser());
+
+app.use(
+  cookieSession({
+    name: 'session',
+    keys: ['random keys pink', 'random keys blue']
+  })
+);
 
 
 
@@ -86,7 +94,7 @@ app.get('/hello', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
   if (!userID) {
     return res.render('error', {errorMessage: 'Please login or register to see your own shortened URLs'})
   }
@@ -102,7 +110,7 @@ app.get('/urls', (req, res) => {
 
 // keep this above /:id
 app.get('/urls/new', (req, res) => {
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
     if (!userID) {
       res.redirect('/login');
     } else {
@@ -115,8 +123,8 @@ app.get('/urls/new', (req, res) => {
 
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  const userID = req.cookies.user_id;
-  if (!req.cookies.user_id) {
+  const userID = req.session.user_id;
+  if (!req.session.user_id) {
     return res.render('error', {errorMessage: 'Please login or register to see your own shortened URLs'})
   };
   const userURLs = urlsForUser(userID);
@@ -142,7 +150,7 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.get('/urls/:shortURL/edit', (req, res) => {
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
   const shortURL = req.params.shortURL
   if (!urlDatabase[shortURL]) {
     return res.status(404).send('Short URL does not exist, it has been changed. Use updated version of short URL.');
@@ -164,7 +172,7 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
   if (userID) {
     res.redirect('/urls');
   }
@@ -176,23 +184,32 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
   const { email } = req.body;
   const { password } = req.body;
-  const foundUser = findUserByEmail(email);
-  const isPasswordMatching = bcrypt.compareSync(password, foundUser.password);//comapring the password with a stored one
-
-  if (foundUser === null || !isPasswordMatching) {
-    return res.status(403).send('Invalid login credentials');
+  if (email === '' || password === '') {
+    return res.send('<h3> Email and passoword fields cannot be empty </h3><p><a href="/login"> Back to login </a></p>')
   }
-  res.cookie('user_id', foundUser.id);
+  const foundUser = findUserByEmail(email);
+  if (foundUser === null) {
+    return res.send('<h3> Invalid login credentials </h3><p><a href="/login"> Back to login </a></p>')
+  }
+  const isPasswordMatching = bcrypt.compareSync(password, foundUser.password);//comapring the password with a stored one
+  if (!isPasswordMatching) {
+    return res.send('<h3> Invalid login credentials </h3><p><a href="/login"> Back to login </a></p>')
+  }
+  //res.cookie('user_id', foundUser.id); no need for this now
+  req.session.user_id = foundUser.id;
   return res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  //res.clearCookie('user_id');
+  //delete req.session.user_id;
+  req.session = null,
   res.redirect('/urls');
 });
 
+
 app.post('/urls', (req, res) => {
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
   if (!userID) {
     return res.status(403).send('Please login to shorten the link');
   };
@@ -211,7 +228,7 @@ app.post('/urls/:shortURL', (req, res) => {
   if (!urlDatabase[shortURL]) {
     return res.status(404).send('Short URL does not exist');
   }
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
   const userURLs = urlsForUser(userID);//we get all urls for that user
   if (!Object.keys(userURLs).includes(shortURL)) { //shortURL is a dynamic var./we are checking if the short url exists in db
     return res.render('error', {errorMessage: 'This short URL does not belong to you, you cannot edit it'})
@@ -222,7 +239,7 @@ app.post('/urls/:shortURL', (req, res) => {
 
 app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
   if (!urlDatabase[shortURL]) {
     return res.status(404).send('Short URL does not exist, it has been changed. Use updated version of short URL.');
   }
