@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');//
 
 const app = express();
 
@@ -10,6 +11,8 @@ app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+
 
 // helper functions and objects
 function generateRandomString() {
@@ -50,7 +53,7 @@ const users = {
   userRandomID: {
     id: 'userRandomID',
     email: 'user@example.com',
-    password: 'purple-monkey-dinosaur'
+    password: 'purple-monkey-dinosaur'//bcrypt.hashSync('purple-monkey-dinosaur', salt)???
   },
   user2RandomID: {
     id: 'user2RandomID',
@@ -174,7 +177,9 @@ app.post('/login', (req, res) => {
   const { email } = req.body;
   const { password } = req.body;
   const foundUser = findUserByEmail(email);
-  if (foundUser === null || password !== foundUser.password) {
+  const isPasswordMatching = bcrypt.compareSync(password, foundUser.password);
+
+  if (foundUser === null || !isPasswordMatching) {
     return res.status(403).send('Invalid login credentials');
   }
   res.cookie('user_id', foundUser.id);
@@ -239,10 +244,11 @@ app.post('/register', (req, res) => {
     return res.status(400).send('Email already exists in the database');
   }
   const userID = generateRandomString();
+  const hashedPassword = bcrypt.hashSync(password, 10);
   const user = {
     id: userID,
     email,
-    password
+    password: hashedPassword
   };
   users[userID] = user;
   console.log(users[userID]);
