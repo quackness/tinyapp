@@ -70,14 +70,14 @@ const users = {
   },
 };
 
-function findUserByEmail(email) {
+function findUserByEmail(email, users) {//rafctored
   for (const id in users) {
     if (users[id].email === email) {
       return users[id];
     }
   }
   return null;
-}
+};
 
 // get routes
 
@@ -179,15 +179,18 @@ app.get('/login', (req, res) => {
   res.render('login');
 });
 
+
+
 // post routes
 
 app.post('/login', (req, res) => {
   const { email } = req.body;
   const { password } = req.body;
   if (email === '' || password === '') {
-    return res.send('<h3> Email and passoword fields cannot be empty </h3><p><a href="/login"> Back to login </a></p>')
+    return res.send('<h3> Email and password fields cannot be empty </h3><p><a href="/login"> Back to login </a></p>')
+    //check later to see if you can make it work: return res.render('error', {errorMessage: '<h3>E-mail and passoword fields cannot be empty.</h3><p><a href="/login"> Back to login </a></p>'})
   }
-  const foundUser = findUserByEmail(email);
+  const foundUser = findUserByEmail(email, users);//refactor
   if (foundUser === null) {
     return res.send('<h3> Invalid login credentials </h3><p><a href="/login"> Back to login </a></p>')
   }
