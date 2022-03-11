@@ -1,9 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const { generateRandomString } = require('./helpers');
+const { urlsForUser } = require('./helpers');
+const { urlDatabase } = require('./helpers');
 const { findUserByEmail } = require('./helpers');
-//const cookieParser = require('cookie-parser'); this will be deleted
-const cookieSession = require('cookie-session');//new
-const bcrypt = require('bcryptjs');//
+const cookieSession = require('cookie-session');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 
@@ -12,7 +14,7 @@ const PORT = 8080;
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
-//app.use(cookieParser());
+
 
 app.use(
   cookieSession({
@@ -24,40 +26,40 @@ app.use(
 
 
 // helper functions and objects
-function generateRandomString() {
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const length = 6;
-  for (let i = 0; i < length; i++) {
-    const randomNum = Math.floor(Math.random() * characters.length);
-    result += characters[randomNum];
-  }
-  return result;
-}
+// function generateRandomString() {
+//   let result = '';
+//   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+//   const length = 6;
+//   for (let i = 0; i < length; i++) {
+//     const randomNum = Math.floor(Math.random() * characters.length);
+//     result += characters[randomNum];
+//   }
+//   return result;
+// }
 
-const urlsForUser = (id) => {
-  let newObj = {};
-  for ( short in urlDatabase) {
-    const userID = urlDatabase[short].userID;
-    if (id === userID) {
-      newObj[short] = urlDatabase[short];    
-    } 
-  }
-  return newObj;
-};
+// const urlsForUser = (id) => {
+//   let newObj = {};
+//   for ( short in urlDatabase) {
+//     const userID = urlDatabase[short].userID;
+//     if (id === userID) {
+//       newObj[short] = urlDatabase[short];    
+//     } 
+//   }
+//   return newObj;
+// };
 
-const urlDatabase = {
-  b6UTxQ: {
-        longURL: "https://www.tsn.ca",
-        userID: "aJ48lW"
-  },
-  i3BoGr: {
-      longURL: "https://www.google.ca",
-      userID: "aJ48lW"
-  }
-};
+// const urlDatabase = {
+//   b6UTxQ: {
+//         longURL: "https://www.tsn.ca",
+//         userID: "aJ48lW"
+//   },
+//   i3BoGr: {
+//       longURL: "https://www.google.ca",
+//       userID: "aJ48lW"
+//   }
+// };
 
-//edited object to strore hashed passwords 
+//edited object to store hashed passwords 
 const users = {
   ivR5b2: {
     id: 'ivR5b2',
@@ -74,17 +76,17 @@ const users = {
 
 // get routes
 
-app.get('/', (req, res) => {
-  res.send('Hello');
-});
+// app.get('/', (req, res) => {
+//   res.send('Hello');
+// });
 
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
-});
+// app.get('/urls.json', (req, res) => {
+//   res.json(urlDatabase);
+// });
 
-app.get('/hello', (req, res) => {
-  res.send('<html><body>Hello <b>World</b></body></html>\n');
-});
+// app.get('/hello', (req, res) => {
+//   res.send('<html><body>Hello <b>World</b></body></html>\n');
+// });
 
 app.get('/urls', (req, res) => {
   const userID = req.session.user_id;
@@ -181,24 +183,20 @@ app.post('/login', (req, res) => {
   const { password } = req.body;
   if (email === '' || password === '') {
     return res.send('<h3> Email and password fields cannot be empty </h3><p><a href="/login"> Back to login </a></p>')
-    //check later to see if you can make it work: return res.render('error', {errorMessage: '<h3>E-mail and passoword fields cannot be empty.</h3><p><a href="/login"> Back to login </a></p>'})
   }
   const foundUser = findUserByEmail(email, users);
   if (foundUser === null) {
     return res.send('<h3> Invalid login credentials </h3><p><a href="/login"> Back to login </a></p>')
   }
-  const isPasswordMatching = bcrypt.compareSync(password, foundUser.password);//comapring the password with a stored one
+  const isPasswordMatching = bcrypt.compareSync(password, foundUser.password);
   if (!isPasswordMatching) {
     return res.send('<h3> Invalid login credentials </h3><p><a href="/login"> Back to login </a></p>')
   }
-  //res.cookie('user_id', foundUser.id); no need for this now
   req.session.user_id = foundUser.id;
   return res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
-  //res.clearCookie('user_id');
-  //delete req.session.user_id;
   req.session = null,
   res.redirect('/urls');
 });
