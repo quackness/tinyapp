@@ -1,5 +1,4 @@
 const { assert } = require('chai');
-
 const { findUserByEmail } = require('../helpers');
 
 const testUsers = {
@@ -15,7 +14,6 @@ const testUsers = {
   },
 };
 
-// should return a user with a valid email
 describe('getUserByEmail', () => {
   it('should return a user object with a valid email', () => {
     const user = findUserByEmail('user@example.com', testUsers);
@@ -23,7 +21,6 @@ describe('getUserByEmail', () => {
     assert.equal(user.id, expectedUserID);
   });
 
-  // should return undefined if we pass an email that is not in our users database
   it('should return undefined if we pass an email that is not in our users database', () => {
     const user = findUserByEmail('non-existent@example.com', testUsers);
     assert.equal(user, undefined);

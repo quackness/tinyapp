@@ -1,11 +1,11 @@
 const urlDatabase = {
   b6UTxQ: {
-        longURL: "https://www.tsn.ca",
-        userID: "aJ48lW"
+    longURL: 'https://www.tsn.ca',
+    userID: 'aJ48lW'
   },
   i3BoGr: {
-      longURL: "https://www.google.ca",
-      userID: "aJ48lW"
+    longURL: 'https://www.google.ca',
+    userID: 'aJ48lW'
   }
 };
 
@@ -22,11 +22,11 @@ function generateRandomString() {
 
 const urlsForUser = (id) => {
   let newObj = {};
-  for ( short in urlDatabase) {
+  for (let short in urlDatabase){
     const userID = urlDatabase[short].userID;
     if (id === userID) {
-      newObj[short] = urlDatabase[short];    
-    } 
+      newObj[short] = urlDatabase[short];
+    }
   }
   return newObj;
 };
