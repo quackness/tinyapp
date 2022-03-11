@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const { findUserByEmail } = require('./helpers');
 //const cookieParser = require('cookie-parser'); this will be deleted
 const cookieSession = require('cookie-session');//new
 const bcrypt = require('bcryptjs');//
@@ -70,14 +71,6 @@ const users = {
   },
 };
 
-function findUserByEmail(email, users) {//rafctored
-  for (const id in users) {
-    if (users[id].email === email) {
-      return users[id];
-    }
-  }
-  return null;
-};
 
 // get routes
 
@@ -190,7 +183,7 @@ app.post('/login', (req, res) => {
     return res.send('<h3> Email and password fields cannot be empty </h3><p><a href="/login"> Back to login </a></p>')
     //check later to see if you can make it work: return res.render('error', {errorMessage: '<h3>E-mail and passoword fields cannot be empty.</h3><p><a href="/login"> Back to login </a></p>'})
   }
-  const foundUser = findUserByEmail(email, users);//refactor
+  const foundUser = findUserByEmail(email, users);
   if (foundUser === null) {
     return res.send('<h3> Invalid login credentials </h3><p><a href="/login"> Back to login </a></p>')
   }
@@ -260,7 +253,7 @@ app.post('/register', (req, res) => {
   if (email === '' || password === '') {
     return res.status(400).send('Email or password cannot be empty');
   }
-  if (findUserByEmail(email)) {
+  if (findUserByEmail(email, users)) {
     return res.status(400).send('Email already exists in the database');
   }
   const userID = generateRandomString();
